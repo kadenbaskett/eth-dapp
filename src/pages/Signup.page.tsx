@@ -10,13 +10,19 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [user, loading, error] = useAuthState(auth);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSignup = () => {
     try {
       // Check if passwords match
       if (password !== confirmPassword) {
-        console.log("Passwords do not match");
-        // You can set an error state here if you want to display an error message.
+        setErrorMessage("Passwords do not match");
+        return;
+      }
+
+      // Check if a valid email is provided
+      if (!isValidEmail(email)) {
+        setErrorMessage("Please provide a valid email address");
         return;
       }
 
@@ -26,10 +32,22 @@ const Signup = () => {
     }
   };
 
+  const isValidEmail = (email: string) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
+  const handleInputChange = () => {
+    setErrorMessage("");
+  };
+
   useEffect(() => {
     if (loading) return;
     if (user) navigate("/wallet");
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -51,7 +69,10 @@ const Signup = () => {
               className="mt-1 p-2 w-full rounded-md bg-gray-500 text-black placeholder-gray-800 text-md  focus:outline-none focus:ring focus:ring-gray-200"
               placeholder="Your email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                handleInputChange();
+              }}
             />
           </div>
           <div className="mb-4">
@@ -67,7 +88,10 @@ const Signup = () => {
               className="mt-1 p-2 w-full rounded-md bg-gray-500 text-black placeholder-gray-800 text-md focus:outline-none focus:ring focus:ring-gray-200"
               placeholder="Your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                handleInputChange();
+              }}
             />
           </div>
           <div className="mb-4">
@@ -83,9 +107,15 @@ const Signup = () => {
               className="mt-1 p-2 w-full rounded-md bg-gray-500 text-black placeholder-gray-800 text-md focus:outline-none focus:ring focus:ring-gray-200"
               placeholder="Confirm your password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                handleInputChange();
+              }}
             />
           </div>
+          {errorMessage && (
+            <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
+          )}
           <button
             type="button"
             onClick={handleSignup}
